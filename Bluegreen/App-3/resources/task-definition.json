@@ -1,0 +1,20 @@
+[
+  {
+    "name": "${name}",
+    "essential": true,
+    "image": "${ecr_repository_uri}:${ecr_image_version}",
+    "mountPoints": [
+  ],
+    "memory": 1024,
+    "cpu": 512,
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": "FARGATE",
+    "portMappings": [
+      {
+        "containerPort": 8080,
+        "hostPort": 8080,
+        "protocol": "tcp"
+      }
+    ]
+  }
+]
