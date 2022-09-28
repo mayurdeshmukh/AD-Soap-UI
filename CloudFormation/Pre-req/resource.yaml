@@ -1,0 +1,191 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: This stack deploy ECS fargate Service
+
+Parameters:
+  ProductName:
+   Type: String
+   Description: Product Name
+   Default: pmd
+
+  AppName:
+   Type: String
+   Description: App Name
+   Default: partmaster
+  
+  Environment:
+   Type: String
+   Description: Env Name
+   Default: devl
+
+  vpcId:
+    Type: String
+    Description: Name of the VPC
+    Default: vpc-49be512f
+
+  ClusterName:
+    Type: String
+    Description: Name of the cluster
+    Default: soap-api
+  
+  ContainerInsights:
+    Type: String
+    Description: Enable CloudWatch Container Insights for a cluster.
+    Default: enabled
+
+  LoadBalancerScheme:
+    Type: String
+    Description: Scheme used by the load balancer
+    Default: internet-facing
+
+  PublicSubnet0:
+    Type: String
+    Description: Public subnet0 id
+    Default: "subnet-f8f129a3"
+  
+  PublicSubnet1:
+    Type: String
+    Description: Public subnet1 id
+    Default: "subnet-86229fad"
+
+  PrivateSubnet0:
+    Type: String
+    Description: Private subnet0 id
+    Default: "subnet-763b683f"
+  
+  PrivateSubnet1:
+    Type: String
+    Description: Private subnet1 id
+    Default: "subnet-793b031e"
+  
+  LoadBalancerType:
+    Type: String
+    Description: type of the loadbalancer
+    Default: application
+
+  ListenersPort80:
+    Type: Number
+    Description: Listener port http
+    Default: 80
+
+  ListenersPort443:
+    Type: Number
+    Description: Listener port https
+    Default: 443
+
+  ListenersProtocol:
+    Type: String
+    Description: Listener Protocol
+    Default: HTTP
+
+##### Cloudwatch LogGroup
+  CWLogGroupName:
+    Type: String
+    Description: CloudWatch Log Group Name
+    Default: LogGroup
+
+  CWRetentionInDays:
+    Type: Number
+    Description: The number of days to retain the log events in the specified log group.
+    Default: 30
+  
+
+Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster 
+    Properties:
+      ClusterName: !Sub ${ProductName}-${Environment}-${AppName}-${ClusterName}
+      ClusterSettings:
+      - Name: containerInsights
+        Value: !Ref ContainerInsights
+      # Tags:
+      # - Key: component
+      #   Value: !Ref component
+      # - Key: Name1
+      #   Value: !Ref Name1
+
+  CloudWatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      # KmsKeyId: String
+      LogGroupName: !Sub ${ProductName}-${Environment}-${AppName}-${ClusterName}-${LogGroup}
+      RetentionInDays: !Ref CWRetentionInDays:
+      # Tags: 
+      #   - Tag
+
+  #------------------------------------------
+  # ECS Security Group for APP
+  #------------------------------------------
+
+  ECSServiceSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: Service-SG
+      GroupDescription: Securtiy group for ECS service
+      VpcId: !Ref vpcId
+
+  #------------------------------------------
+  # Internet-facing ALB Security Group
+  #------------------------------------------
+
+  ALBSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: ALB-SG
+      GroupDescription: ECS SecurityGroup to allow traffic from empty ALB SecurityGroup
+      VpcId: !Ref vpcId
+      
+  EcsSecurityGroupinbound80:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref ECSServiceSG
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !Ref ALBSG
+
+  ALBSecurityGroupinbound80:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref ALBSG
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      CidrIp: 0.0.0.0/0
+
+
+  #------------------------------------------
+  # Loadbalancer
+  #------------------------------------------
+
+  SoapUILB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    DependsOn: ALBSG
+    Properties: 
+      Name: ECSALB
+      Scheme: !Ref LoadBalancerScheme
+      SecurityGroups: 
+        - !Ref ALBSG
+
+      Subnets: 
+        - !Ref PublicSubnet0
+        - !Ref PublicSubnet1
+        - !Ref PrivateSubnet0
+        - !Ref PrivateSubnet1
+      Type: !Ref LoadBalancerType
+      
+
+  Listener80:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties: 
+      DefaultActions: 
+        - Type: fixed-response
+          FixedResponseConfig:
+            ContentType: "text/plain"
+            MessageBody: "You've reached the listener! Congrats!"
+            StatusCode: "503"
+          
+      LoadBalancerArn: 
+        Ref: "SoapUILB"
+      Port: !Ref ListenersPort80
+      Protocol: !Ref ListenersProtocol     
