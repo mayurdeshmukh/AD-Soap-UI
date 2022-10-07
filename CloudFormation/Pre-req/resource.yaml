@@ -8,10 +8,10 @@ Parameters:
    Description: Product Name
    Default: pmd
 
-  AppName:
+  ComponentName:
    Type: String
    Description: App Name
-   Default: partmaster
+   Default: pmawsapi
   
   Environment:
    Type: String
@@ -32,6 +32,11 @@ Parameters:
     Type: String
     Description: Enable CloudWatch Container Insights for a cluster.
     Default: enabled
+
+  LoadBalancerName:
+    Type: String
+    Description: Name of the LoadBalancer
+    Default: api-lb
 
   LoadBalancerScheme:
     Type: String
@@ -63,6 +68,12 @@ Parameters:
     Description: type of the loadbalancer
     Default: application
 
+  LoadBalancerSG:
+    Type: String
+    Description: Loadbalancer security group
+    Default: lb-sg
+  
+
   ListenersPort80:
     Type: Number
     Description: Listener port http
@@ -91,38 +102,24 @@ Parameters:
   
 
 Resources:
+
+  #------------------------------------------
+  # ECS Cluster
+  #------------------------------------------
+
   ECSCluster:
     Type: AWS::ECS::Cluster 
     Properties:
-      ClusterName: !Sub ${ProductName}-${Environment}-${AppName}-${ClusterName}
+      ClusterName: !Sub ${ProductName}-${Environment}-${ComponentName}-${ClusterName}
       ClusterSettings:
       - Name: containerInsights
         Value: !Ref ContainerInsights
-      # Tags:
-      # - Key: component
-      #   Value: !Ref component
-      # - Key: Name1
-      #   Value: !Ref Name1
+      Tags:
+      - Key: component
+        Value: !Ref component
+      - Key: Name1
+        Value: !Ref Name1
 
-  CloudWatchLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties: 
-      # KmsKeyId: String
-      LogGroupName: !Sub ${ProductName}-${Environment}-${AppName}-${ClusterName}-${LogGroup}
-      RetentionInDays: !Ref CWRetentionInDays:
-      # Tags: 
-      #   - Tag
-
-  #------------------------------------------
-  # ECS Security Group for APP
-  #------------------------------------------
-
-  ECSServiceSG:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupName: Service-SG
-      GroupDescription: Securtiy group for ECS service
-      VpcId: !Ref vpcId
 
   #------------------------------------------
   # Internet-facing ALB Security Group
@@ -131,18 +128,10 @@ Resources:
   ALBSG:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      GroupName: ALB-SG
+      GroupName: !Sub ${ProductName}-${Environment}-${ComponentName}-${LoadBalancerSG}
       GroupDescription: ECS SecurityGroup to allow traffic from empty ALB SecurityGroup
       VpcId: !Ref vpcId
       
-  EcsSecurityGroupinbound80:
-    Type: 'AWS::EC2::SecurityGroupIngress'
-    Properties:
-      GroupId: !Ref ECSServiceSG
-      IpProtocol: tcp
-      FromPort: 80
-      ToPort: 80
-      SourceSecurityGroupId: !Ref ALBSG
 
   ALBSecurityGroupinbound80:
     Type: 'AWS::EC2::SecurityGroupIngress'
@@ -162,7 +151,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     DependsOn: ALBSG
     Properties: 
-      Name: ECSALB
+      Name: !Sub '${ProductName}-${Environment}-${ComponentName}'
       Scheme: !Ref LoadBalancerScheme
       SecurityGroups: 
         - !Ref ALBSG
@@ -172,8 +161,12 @@ Resources:
         - !Ref PublicSubnet1
         - !Ref PrivateSubnet0
         - !Ref PrivateSubnet1
+
       Type: !Ref LoadBalancerType
       
+  #------------------------------------------
+  # Loadbalancer Listener
+  #------------------------------------------
 
   Listener80:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -189,3 +182,26 @@ Resources:
         Ref: "SoapUILB"
       Port: !Ref ListenersPort80
       Protocol: !Ref ListenersProtocol     
+
+
+Outputs:
+  ECSClusterName:
+    Value: !Sub '${ProductName}-${Environment}-${ComponentName}-${ClusterName}'
+    Export:
+      Name: ECSClusterName
+
+  SGIDLoadbalancer:
+    Value: !GetAtt ALBSG.GroupId
+    Export:
+       Name: SG-Id-Loadbalancer
+
+  LBArn:
+   Value: !Ref SoapUILB
+   Export:
+       Name: LBArn
+
+  ListenerArn80:
+   Value: !Ref Listener80
+   Export:
+       Name: ListenerArn80
+

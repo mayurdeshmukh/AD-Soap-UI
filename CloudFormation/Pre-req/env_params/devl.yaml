@@ -1,0 +1,64 @@
+####################################################################
+# This File is used for value definition                           # 
+####################################################################
+
+### Meta Parameters
+
+- ParameterKey: ProductName
+  ParameterValue: "pmd"
+
+- ParameterKey: ComponentName
+  ParameterValue: "pmawsapi"
+
+- ParameterKey: Environment
+  ParameterValue: "devl"
+
+### VPC 
+
+- ParameterKey: vpcId
+  ParameterValue: "vpc-49be512f"
+
+- ParameterKey: PublicSubnet0
+  ParameterValue: "subnet-f8f129a3"
+
+- ParameterKey: PublicSubnet1
+  ParameterValue: "subnet-86229fad"
+
+- ParameterKey: PrivateSubnet0
+  ParameterValue: "subnet-763b683f"
+
+- ParameterKey: PrivateSubnet1
+  ParameterValue: "subnet-793b031e"
+  
+
+### ECS Cluster
+
+- ParameterKey: ClusterName
+  ParameterValue: "soap-api"
+
+- ParameterKey: ContainerInsights
+  ParameterValue: "enabled"
+  
+### Loadbalancer 
+
+- ParameterKey: LoadBalancerName
+  ParameterValue: "api-lb"
+
+- ParameterKey: LoadBalancerScheme
+  ParameterValue: "internet-facing"
+
+- ParameterKey: LoadBalancerType
+  ParameterValue: "application"
+
+- ParameterKey: LoadBalancerSG
+  ParameterValue: "lb-sg"
+
+- ParameterKey: ListenersPort80
+  ParameterValue: 80
+
+- ParameterKey: ListenersPort443
+  ParameterValue: 443
+
+- ParameterKey: ListenersProtocol
+  ParameterValue: HTTP
+

@@ -1,0 +1,440 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+
+#task definition
+
+  ProductName:
+   Type: String
+   Description: Product Name
+   Default: pmd
+
+  ApiName:
+   Type: String
+   Description: App Name
+   Default: basicuser
+   
+  ComponentName:
+   Type: String
+   Description: App Name
+   Default: pmawsapi
+
+  Environment:
+   Type: String
+   Description: Env Name
+   Default: devl
+
+  vpcId:
+    Type: String
+    Description: Name of the VPC
+    Default: vpc-49be512f
+
+  PrivateSubnet0:
+    Type: String
+    Description: Private subnet0 id
+    Default: "subnet-763b683f"
+  
+  PrivateSubnet1:
+    Type: String
+    Description: Private subnet1 id
+    Default: "subnet-793b031e"
+
+  PublicSubnet1:
+    Type: String
+    Description: Public subnet1 id
+    Default: "subnet-86229fad"
+
+  PublicSubnet0:
+    Type: String
+    Description: Private subnet0 id
+    Default: "subnet-f8f129a3"
+
+  ContainerDefinitionsImage:
+    Type: String
+    Description: The image used to start a container
+    Default: "847370586410.dkr.ecr.us-west-2.amazonaws.com/appmod:soap-ui-app1"
+
+  LogConfigurationLogDriver:
+    Type: String
+    Description: The log driver to use for the container.  
+    Default: awslogs
+
+  awslogsregion:
+    Type: String
+    Description: The log configuration specification for the container
+    Default: "us-west-2"
+
+  TaskdefContainerName:
+    Type: String
+    Description: Name of the container mentioned in task definition
+    Default: "appmod"
+
+  ContainerPort:
+    Type: Number
+    Description: The port number on the container that's bound to the user-specified or automatically assigned host port.
+    Default: 80
+
+  PortMappingsProtocol:
+    Type: String
+    Description: The protocol used for the port mapping.
+    Default: HTTP
+
+  HostPort:
+    Type: Number
+    Description: The port number on the container instance to reserve for your container.
+    Default: 80
+
+  Cpu:
+    Type: Number
+    Description: The number of cpu units reserved for the container.
+    Default: 1024
+
+  ExecutionRoleArn:
+    Type: String
+    Description: The Amazon Resource Name (ARN) of the task execution role that grants the Amazon ECS container agent permission to make AWS API calls on your behalf.
+    Default: "arn:aws:iam::847370586410:role/JD-Soap-UI-Execution-Role"
+
+  Memory:
+    Type: Number
+    Description: The amount (in MiB) of memory used by the task.
+    Default: 2048
+
+  NetworkMode:
+    Type: String
+    Description: The Docker networking mode to use for the containers in the task.
+    Default: awsvpc
+
+  RequiresCompatibilities:
+    Type: String
+    Description: The task launch types the task definition was validated against.
+    Default: FARGATE
+
+  TaskRoleArn:
+    Type: String
+    Description: The short name or full Amazon Resource Name (ARN) of the AWS Identity and Access Management role that grants containers in the task permission to call AWS APIs on your behalf.
+    Default: "arn:aws:iam::847370586410:role/JD-Soap-UI-Service-Role"
+
+##### Cloudwatch LogGroup
+  # CWLogGroupName:
+  #   Type: String
+  #   Description: CloudWatch Log Group Name
+  #   Default: LogGroup
+
+  CWRetentionInDays:
+    Type: Number
+    Description: The number of days to retain the log events in the specified log group.
+    Default: 30
+
+ #ECS Service
+
+  # EnableECSManagedTags:
+  #   Type: Boolean
+  #   Description: Specifies whether to turn on Amazon ECS managed tags for the tasks within the service.
+  #   Default: true
+
+  DeploymentControllerType:
+    Type: String
+    Description: The deployment controller type to use.
+    Default: ECS
+
+  LaunchType:
+    Type: String
+    Description: The launch type on which to run your service.
+    Default: FARGATE
+
+  DesiredCount:
+    Type: Number
+    Description: The number of instantiations of the specified task definition to place and keep running on your cluster.
+    Default: 2
+
+
+  AssignPublicIp:
+    Type: String
+    Description: Whether the task's elastic network interface receives a public IP address.
+    Default: DISABLED
+
+
+  #Target Group
+
+  HealthCheckEnabled:
+    Type: String
+    Description: Indicates whether health checks are enabled.
+    Default: true
+
+  HealthCheckIntervalSeconds:
+    Type: Number
+    Description: The approximate amount of time, in seconds, between health checks of an individual target.
+    Default: 30
+
+  TargetGroupHealthCheckPath:
+    Type: String
+    Description: The destination for health checks on the targets.
+    Default: "/app1/"
+
+  HealthCheckProtocol:
+    Type: String
+    Description: The protocol the load balancer uses when performing health checks on targets.
+    Default: HTTP
+
+  HealthCheckTimeoutSeconds:
+    Type: Number
+    Description: The amount of time, in seconds, during which no response from a target means a failed health check.
+    Default: 5
+
+  # TargetGroupName:
+  #   Type: String
+  #   Description: Name of the target group1
+  #   Default: "App1"
+
+  TargetGroupPort:
+    Type: Number
+    Description: target group1 port
+    Default: 80
+
+
+  TargetGroupProtocol:
+    Type: String
+    Description: target group protocol
+    Default: HTTP
+
+  TargetGroupTargetType:
+    Type: String
+    Description: type of the target group
+    Default: ip
+
+  UnhealthyThresholdCount:
+    Type: Number
+    Description: The number of consecutive health check failures required before considering a target unhealthy.
+    Default: 2
+
+  HealthyThresholdCount:
+    Type: Number
+    Description: The number of consecutive health checks successes required before considering an unhealthy target healthy. 
+    Default: 2
+
+  ListenersPort:
+    Type: Number
+    Description: target group1 port
+    Default: 80
+
+  ListenersProtocol:
+    Type: String
+    Description: target group1 port
+    Default: HTTP
+
+  ContextPath:
+    Type: String
+    Description: target group1 port
+    Default: "/app1/"
+
+### ECS Autoscaling
+  ECSAutoScalingRole:
+    Type: String
+    Description: ECS Autoscaling Role ARN
+    Default: "arn:aws:iam::847370586410:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
+  
+  MinCapacity:
+    Type: Number
+    Description: Minimum Number of tasks
+    Default: 1
+
+  MaxCapacity:
+    Type: Number
+    Description: Maximum Number of tasks
+    Default: 4
+
+  CPUUtilizationTargetValue:
+    Type: Number
+    Description: CPU Utilization percentage for service autoscaling
+    Default: 75
+
+
+Resources:
+
+
+  CloudWatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      # KmsKeyId: String
+      LogGroupName: !Sub ${ProductName}-${Environment}-${ComponentName}-${ApiName}
+      RetentionInDays: !Ref CWRetentionInDays
+      # Tags: 
+      #   - Tag
+
+  ECSServiceSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: !Sub ${ProductName}-${Environment}-${ComponentName}-${ApiName}
+      GroupDescription: Securtiy group for ECS service
+      VpcId: !Ref vpcId
+
+  EcsSecurityGroupinbound80:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref ECSServiceSG
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !ImportValue SG-Id-Loadbalancer
+
+  'App1TargetGroup':
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties: 
+      Name: !Sub ${ProductName}-${Environment}-${ComponentName}-${ApiName}
+      Port: !Ref TargetGroupPort
+      Protocol: !Ref TargetGroupProtocol
+      TargetType: !Ref TargetGroupTargetType
+
+      HealthCheckEnabled: !Ref HealthCheckEnabled
+      HealthCheckIntervalSeconds: !Ref HealthCheckIntervalSeconds
+      HealthCheckPath: !Ref TargetGroupHealthCheckPath
+      HealthCheckProtocol: !Ref HealthCheckProtocol
+      HealthCheckTimeoutSeconds: !Ref HealthCheckTimeoutSeconds
+      UnhealthyThresholdCount: !Ref UnhealthyThresholdCount
+      HealthyThresholdCount: !Ref HealthyThresholdCount
+      VpcId: !Ref vpcId
+  
+
+  App1Listener:
+    Type: 'AWS::ElasticLoadBalancingV2::ListenerRule'
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref App1TargetGroup
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - !Ref ContextPath
+      ListenerArn: !ImportValue "ListenerArn80"
+      Priority: 1
+
+  'App1ECSTaskDefinition':
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Essential: true
+          Image: !Ref ContainerDefinitionsImage
+          LogConfiguration:
+            LogDriver: !Ref LogConfigurationLogDriver
+            Options:
+              awslogs-group:  !Sub ${ProductName}-${Environment}-${ComponentName}-${ApiName}
+              awslogs-region: !Ref awslogsregion
+              awslogs-stream-prefix: !Sub ${ProductName}-${Environment}-${ApiName}
+
+          Name: !Ref TaskdefContainerName
+          PortMappings:
+          - ContainerPort: !Ref ContainerPort
+            Protocol: !Ref PortMappingsProtocol
+            HostPort: !Ref HostPort
+
+
+      Cpu: !Ref Cpu
+      ExecutionRoleArn: !Ref ExecutionRoleArn
+      Family: !Sub ${ProductName}-${Environment}-${ComponentName}-${ApiName}
+      Memory: !Ref Memory
+      NetworkMode: !Ref NetworkMode
+      RequiresCompatibilities:
+      - !Ref RequiresCompatibilities
+      Tags:
+      - Key: Product
+        Value: !Ref ProductName
+      - Key: ApiName
+        Value: !Ref ApiName
+      TaskRoleArn: !Ref TaskRoleArn
+      Volumes:
+      - Name: !Sub ${ProductName}-${Environment}-${ComponentName}-${ApiName}
+                      
+  'ECSServiceApp1':
+    Type: AWS::ECS::Service
+    DependsOn: App1Listener
+    Properties:
+      Cluster: !ImportValue ECSClusterName
+      DeploymentController:
+        Type: !Ref DeploymentControllerType
+      
+      # EnableECSManagedTags: !Ref EnableECSManagedTags
+      LaunchType: !Ref LaunchType
+      DesiredCount: !Ref DesiredCount  # For testing purpose
+      LoadBalancers:
+        - ContainerName: !Ref TaskdefContainerName
+          ContainerPort: !Ref ContainerPort
+          TargetGroupArn: !Ref App1TargetGroup
+
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: !Ref AssignPublicIp
+          SecurityGroups: 
+          - !Ref ECSServiceSG
+
+          Subnets:
+          - !Ref PrivateSubnet0
+          - !Ref PrivateSubnet1
+
+      ServiceName: !Sub ${ProductName}-${Environment}-${ComponentName}-${ApiName}
+      Tags:
+      - Key: Product
+        Value: !Ref ProductName
+      - Key: ApiName
+        Value: !Ref ApiName
+
+      TaskDefinition:
+        Ref: 'App1ECSTaskDefinition'
+
+  ECSScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      RoleARN: !Ref ECSAutoScalingRole
+      ResourceId: !Join ['/', ['service', !ImportValue ECSClusterName, !GetAtt [ECSServiceApp1, Name] ]]    
+      # ResourceId: !Sub service/my-ecs-cluster/my-service
+      ServiceNamespace: ecs
+      ScalableDimension: ecs:service:DesiredCount
+      MinCapacity: !Ref MinCapacity
+      MaxCapacity: !Ref MaxCapacity
+
+
+  ECSServiceScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub ${ProductName}-${Environment}-${ComponentName}-${ApiName}
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ECSScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+        TargetValue: !Ref CPUUtilizationTargetValue
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+
+  AlarmSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${ProductName}-${Environment}-${ComponentName}-${ApiName}
+      Subscription:
+        - Protocol: email
+          Endpoint: "mayur.deshmukh@yash.com"
+
+
+  AlarmHighRequests:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: TRUE
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+      AlarmDescription: !Sub
+        - 'Scale Up Alarm based on requests for ${ECSServiceApp1.Name}'
+        - FargateServiceName: !GetAtt ECSServiceApp1.Name
+      ComparisonOperator: LessThanThreshold
+      Threshold: 1
+      # the dimensions can be found in the console after selecting a namespace to filter by
+      Dimensions:
+        - Name: Service Name
+          Value: !GetAtt ECSServiceApp1.Name
+      EvaluationPeriods: 3
+      # the metric name can be found in the console on the screen before a metric is graphed
+      MetricName: CPUUtilization
+      # the namespace can be found in the console on the first screen before filtering metrics
+      Namespace: AWS/ECS
+      # OKActions:
+      #   - !Ref ScaleDownPolicy
+      Period: 60
+      Statistic: SampleCount
+

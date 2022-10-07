@@ -1,0 +1,145 @@
+####################################################################
+# This File is used for value definition                           # 
+####################################################################
+
+### Meta Parameters
+
+- ParameterKey: ProductName
+  ParameterValue: "pmd"
+
+- ParameterKey: ComponentName
+  ParameterValue: "pmawsapi"
+
+- ParameterKey: Environment
+  ParameterValue: "devl"
+
+### VPC Parameters
+
+- ParameterKey: vpcId
+  ParameterValue: "vpc-49be512f"
+
+- ParameterKey: PublicSubnet0
+  ParameterValue: "subnet-f8f129a3"
+
+- ParameterKey: PublicSubnet1
+  ParameterValue: "subnet-86229fad"
+
+- ParameterKey: PrivateSubnet0
+  ParameterValue: "subnet-763b683f"
+
+- ParameterKey: PrivateSubnet1
+  ParameterValue: "subnet-793b031e"
+
+### ECS Cluster Parameters
+
+- ParameterKey: ContainerDefinitionsImage
+  ParameterValue: "847370586410.dkr.ecr.us-west-2.amazonaws.com/appmod:soap-ui-app1"
+
+- ParameterKey: LogConfigurationLogDriver
+  ParameterValue: "awslogs"
+
+- ParameterKey: awslogsregion
+  ParameterValue: "us-west-2"
+
+- ParameterKey: TaskdefContainerName
+  ParameterValue: "appmod"
+
+- ParameterKey: ContainerPort
+  ParameterValue: 80
+
+- ParameterKey: PortMappingsProtocol
+  ParameterValue: HTTP 
+
+- ParameterKey: HostPort
+  ParameterValue: 80
+
+- ParameterKey: Cpu
+  ParameterValue: 1024
+
+- ParameterKey: ExecutionRoleArn
+  ParameterValue: arn:aws:iam::847370586410:role/JD-Soap-UI-Execution-Role
+
+- ParameterKey: Memory
+  ParameterValue: 2048
+
+- ParameterKey: NetworkMode
+  ParameterValue: awsvpc
+
+- ParameterKey: RequiresCompatibilities
+  ParameterValue: FARGATE 
+
+- ParameterKey: TaskRoleArn
+  ParameterValue: "arn:aws:iam::847370586410:role/JD-Soap-UI-Service-Role"
+
+- ParameterKey: CWRetentionInDays
+  ParameterValue: 30
+
+ ### ECS Service Parameters
+
+- ParameterKey: DeploymentControllerType
+  ParameterValue: ECS
+
+- ParameterKey: LaunchType
+  ParameterValue: FARGATE
+
+- ParameterKey: DesiredCount
+  ParameterValue: 2
+
+- ParameterKey: AssignPublicIp
+  ParameterValue: DISABLED
+
+### Target Group Parameters
+
+- ParameterKey: HealthCheckEnabled
+  ParameterValue: true
+
+- ParameterKey: HealthCheckIntervalSeconds
+  ParameterValue: 30
+
+- ParameterKey: TargetGroupHealthCheckPath
+  ParameterValue: "/app1/"
+
+- ParameterKey: HealthCheckProtocol
+  ParameterValue: HTTP
+
+- ParameterKey: HealthCheckTimeoutSeconds
+  ParameterValue: 5
+  
+- ParameterKey: TargetGroupPort
+  ParameterValue: 80
+
+- ParameterKey: TargetGroupProtocol
+  ParameterValue: HTTP
+
+- ParameterKey: TargetGroupTargetType
+  ParameterValue: ip
+
+- ParameterKey: UnhealthyThresholdCount
+  ParameterValue: 2
+
+- ParameterKey: HealthyThresholdCount
+  ParameterValue: 2
+
+- ParameterKey: ListenersPort
+  ParameterValue: 80
+
+- ParameterKey: ListenersProtocol
+  ParameterValue: HTTP
+
+- ParameterKey: ContextPath
+  ParameterValue: "/app1/"
+
+
+### ECS Autoscaling Parameters
+
+- ParameterKey: ECSAutoScalingRole
+  ParameterValue: "arn:aws:iam::847370586410:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
+
+- ParameterKey: MinCapacity
+  ParameterValue: 1
+
+- ParameterKey: MaxCapacity
+  ParameterValue: 4
+
+- ParameterKey: CPUUtilizationTargetValue
+  ParameterValue: 75
